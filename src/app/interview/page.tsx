@@ -13,7 +13,7 @@ import { Suspense } from "react";
 
 function InterviewComponent() {
   const [role, setRole] = useState<string>("Software Eng");
-  const [questionType, setQuestionType] = useState<string>("Behavioral");
+  const [questionType, setQuestionType] = useState<string>("Technical");
   const [numQuestions, setNumQuestions] = useState<number>(10);
   const [questions, setQuestions] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
