@@ -9,8 +9,9 @@ import {
   FaArrowRight,
 } from "react-icons/fa";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function Interview() {
+function InterviewComponent() {
   const [role, setRole] = useState<string>("Software Eng");
   const [questionType, setQuestionType] = useState<string>("Behavioral");
   const [numQuestions, setNumQuestions] = useState<number>(10);
@@ -21,6 +22,7 @@ export default function Interview() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    // Initialize questions from query string if present
     const questionsFromQuery = searchParams.get("questions");
     if (questionsFromQuery) {
       setQuestions(JSON.parse(decodeURIComponent(questionsFromQuery)));
@@ -73,6 +75,7 @@ export default function Interview() {
         <source src="/videos/bg.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
+
       <div className="absolute inset-0 bg-black bg-opacity-50"></div>
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -182,5 +185,13 @@ export default function Interview() {
         </ul>
       </motion.div>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <InterviewComponent />
+    </Suspense>
   );
 }
