@@ -19,7 +19,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         {
           error:
-            "All fields ('role', 'questionType', and 'numQuestions') are required and 'numQuestions' must be a valid number.",
+            "All fields ('role', 'questionType', and 'numQuestions') are required, and 'numQuestions' must be a valid number.",
         },
         { status: 400 }
       );
@@ -49,7 +49,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const content =
       response.choices[0]?.message?.content || "No response generated.";
 
-    return NextResponse.json({ questions: content });
+    // Convert content into a JSON object with numbered keys
+    const questionsArray = content
+      .split("\n") // Split into lines
+      .map((line) => line.trim()) // Trim each line
+      .filter((line) => line.length > 0); // Remove empty lines
+
+    const questionsObject: Record<string, string> = {};
+    questionsArray.forEach((question, index) => {
+      questionsObject[(index + 1).toString()] = question;
+    });
+    // console.log(questionsObject);
+
+    return NextResponse.json({ questions: questionsObject });
   } catch (error: unknown) {
     console.error("API Error:", error);
     return NextResponse.json(

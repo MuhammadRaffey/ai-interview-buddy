@@ -11,22 +11,16 @@ const openai = new OpenAI({
   apiKey,
 });
 
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ questionId: string }> }
-) {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
-    const { questionId } = await context.params;
+    const { question } = await req.json();
 
-    if (!questionId) {
+    if (!question) {
       return NextResponse.json(
-        { error: "Question ID is required in the route parameter." },
+        { error: "Question is required in the request body." },
         { status: 400 }
       );
     }
-
-    const question = decodeURIComponent(questionId);
-
     const messages: Array<{
       role: "system" | "user" | "assistant";
       content: string;
@@ -34,11 +28,11 @@ export async function GET(
       {
         role: "system",
         content:
-          "You are an expert AI interview coach. Provide concise and accurate answers for interview questions.",
+          "You are an expert AI interview coach. Provide professional and concise answers to interview questions.",
       },
       {
         role: "user",
-        content: `Answer the following interview question: "${question}"`,
+        content: question,
       },
     ];
 
@@ -48,18 +42,18 @@ export async function GET(
       temperature: 0.5,
     });
 
-    const content =
+    const answer =
       response.choices[0]?.message?.content || "No answer generated.";
 
-    return NextResponse.json({ answer: content });
-  } catch (error) {
-    console.error("Error fetching answer:", error);
+    return NextResponse.json({ answer });
+  } catch (error: unknown) {
+    console.error("API Error:", error);
     return NextResponse.json(
       {
         error:
           error instanceof Error
             ? error.message
-            : "An unknown error occurred while fetching the answer.",
+            : "An unknown error occurred while generating the answer.",
       },
       { status: 500 }
     );
