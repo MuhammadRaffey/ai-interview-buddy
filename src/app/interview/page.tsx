@@ -5,21 +5,24 @@ import {
   Rocket,
   Target,
   Settings,
-  Globe,
   BookOpen,
-  Zap,
   RefreshCw,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Suspense } from "react";
+import BackgroundEffects from "@/components/layout/BackgroundEffects";
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import Select from "@/components/ui/Select";
+import Alert from "@/components/ui/Alert";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
-// Define types for better type safety
 type QuestionType = "Technical" | "Behavioral" | "Case Study";
 type InterviewQuestion = string;
 
-function InterviewPreparationDashboard() {
-  // Typed state variables
+const InterviewPreparationDashboard = () => {
   const [role, setRole] = useState<string>("Software Engineer");
   const [questionType, setQuestionType] = useState<QuestionType>("Technical");
   const [numQuestions, setNumQuestions] = useState<number>(10);
@@ -29,26 +32,17 @@ function InterviewPreparationDashboard() {
 
   const router = useRouter();
 
-  // Load saved questions on component mount
+  // Removed auto-loading of saved questions
+  // Questions will only appear after explicitly generating them
   useEffect(() => {
-    const savedQuestions = localStorage.getItem("interviewPrep");
-    if (savedQuestions) {
-      try {
-        const parsedQuestions = JSON.parse(savedQuestions);
-        setQuestions(parsedQuestions);
-      } catch (err) {
-        console.error("Failed to parse saved questions", err);
-      }
-    }
+    // Clear any stale questions from localStorage on mount
+    localStorage.removeItem("interviewPrep");
   }, []);
 
-  // Fetch interview questions
   const generateInterviewQuestions = async () => {
-    // Reset previous states
     setLoading(true);
     setError(null);
 
-    // Validation
     if (!role.trim() || numQuestions < 1 || numQuestions > 20) {
       setError("Please provide a valid role and number of questions (1-20).");
       setLoading(false);
@@ -93,210 +87,201 @@ function InterviewPreparationDashboard() {
     }
   };
 
-  // Reset questions and local storage
   const resetInterviewPrep = () => {
     setQuestions([]);
     localStorage.removeItem("interviewPrep");
+    setError(null);
   };
 
-  // Navigate to answer page
   const navigateToAnswer = (questionIndex: number) => {
     router.push(`/interview/answer/${questionIndex}`);
   };
 
+  const questionTypeOptions = [
+    { value: "Technical", label: "🔧 Technical Depth" },
+    { value: "Behavioral", label: "💡 Behavioral Insights" },
+    { value: "Case Study", label: "📊 Strategic Analysis" },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-black text-gray-100 relative overflow-hidden">
-      {/* Animated Background Particles */}
-      <motion.div
-        className="absolute inset-0 z-0 opacity-50"
-        initial={{ opacity: 0 }}
-        animate={{
-          opacity: [0.1, 0.3, 0.1],
-          backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-        }}
-        transition={{
-          duration: 10,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
+    <div className="min-h-screen relative overflow-hidden pt-20">
+      <BackgroundEffects />
 
       <div className="container mx-auto px-4 py-12 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="max-w-2xl mx-auto bg-gray-800/60 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-gray-700"
+          className="max-w-4xl mx-auto"
         >
-          <header className="text-center mb-8 flex items-center justify-center gap-4">
-            <Rocket className="text-blue-400" size={36} />
-            <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
-              Interview Maestro
-            </h1>
-          </header>
+          <Card className="p-8 md:p-10">
+            {/* Header */}
+            <header className="text-center mb-10">
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <motion.div
+                  animate={{
+                    rotate: [0, 10, -10, 0],
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <Rocket className="text-blue-400" size={42} />
+                </motion.div>
+                <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500">
+                  Interview Preparation
+                </h1>
+              </div>
+              <p className="text-gray-400 text-lg">
+                Configure your interview prep session and generate customized
+                questions
+              </p>
+            </header>
 
-          {/* Configuration Section */}
-          <div className="space-y-6">
-            {/* Role Input */}
-            <div>
-              <label
-                htmlFor="role"
-                className="flex items-center gap-2 mb-2 text-sm font-medium text-gray-300"
-              >
-                <Target size={16} className="text-blue-400" />
-                Job Role
-              </label>
-              <input
+            {/* Configuration Section */}
+            <div className="space-y-6 mb-8">
+              <Input
                 id="role"
-                type="text"
+                label="Job Role"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                placeholder="Enter your target role"
-                className="w-full p-3 rounded-lg bg-gray-700/50 border border-gray-600 focus:ring-2 focus:ring-blue-500 transition-all"
+                placeholder="e.g., Software Engineer, Product Manager, Data Scientist"
+                icon={Target}
               />
-            </div>
 
-            {/* Question Type Selector */}
-            <div>
-              <label
-                htmlFor="questionType"
-                className="flex items-center gap-2 mb-2 text-sm font-medium text-gray-300"
-              >
-                <BookOpen size={16} className="text-green-400" />
-                Interview Focus
-              </label>
-              <select
+              <Select
                 id="questionType"
+                label="Interview Focus"
                 value={questionType}
                 onChange={(e) =>
                   setQuestionType(e.target.value as QuestionType)
                 }
-                className="w-full p-3 rounded-lg bg-gray-700/50 border border-gray-600 focus:ring-2 focus:ring-green-500 transition-all"
-              >
-                <option value="Technical">Technical Depth</option>
-                <option value="Behavioral">Behavioral Insights</option>
-                <option value="Case Study">Strategic Analysis</option>
-              </select>
-            </div>
+                options={questionTypeOptions}
+                icon={BookOpen}
+              />
 
-            {/* Number of Questions */}
-            <div>
-              <label
-                htmlFor="numQuestions"
-                className="flex items-center gap-2 mb-2 text-sm font-medium text-gray-300"
-              >
-                <Settings size={16} className="text-purple-400" />
-                Question Quantity
-              </label>
-              <input
+              <Input
                 id="numQuestions"
+                label="Number of Questions"
                 type="number"
-                min={1}
-                max={20}
                 value={numQuestions}
                 onChange={(e) => setNumQuestions(Number(e.target.value) || 1)}
-                className="w-full p-3 rounded-lg bg-gray-700/50 border border-gray-600 focus:ring-2 focus:ring-purple-500 transition-all"
+                min={1}
+                max={20}
+                icon={Settings}
               />
             </div>
 
             {/* Error Display */}
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-red-500/20 border border-red-500 text-red-300 p-3 rounded-lg text-center"
-              >
-                {error}
-              </motion.div>
-            )}
+            <Alert type="error" message={error || ""} show={!!error} />
 
             {/* Action Buttons */}
-            <div className="flex space-x-4">
-              <motion.button
+            <div className="flex flex-col sm:flex-row gap-4 mb-10">
+              <Button
                 onClick={generateInterviewQuestions}
                 disabled={loading}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`
-                  flex-1 flex items-center justify-center gap-2 p-3 rounded-lg 
-                  ${
-                    loading
-                      ? "bg-gray-600 cursor-not-allowed"
-                      : "bg-blue-600 hover:bg-blue-700 text-white"
-                  } transition-all
-                `}
+                icon={loading ? undefined : Sparkles}
+                className="flex-1"
               >
-                {loading ? (
-                  <>
-                    <Zap className="animate-pulse" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Globe />
-                    Generate Questions
-                  </>
-                )}
-              </motion.button>
+                {loading ? "Generating..." : "Generate Questions"}
+              </Button>
 
               {questions.length > 0 && (
-                <motion.button
+                <Button
                   onClick={resetInterviewPrep}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-red-600 hover:bg-red-700 text-white p-3 rounded-lg flex items-center gap-2"
+                  variant="danger"
+                  icon={RefreshCw}
                 >
-                  <RefreshCw />
                   Reset
-                </motion.button>
+                </Button>
               )}
             </div>
-          </div>
 
-          {/* Questions List */}
-          <AnimatePresence>
-            {questions.length > 0 && (
+            {/* Loading State */}
+            {loading && (
+              <div className="py-12">
+                <LoadingSpinner
+                  size="lg"
+                  text="Generating your personalized questions..."
+                />
+              </div>
+            )}
+
+            {/* Questions List */}
+            <AnimatePresence>
+              {!loading && questions.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="space-y-4"
+                >
+                  <div className="flex items-center gap-2 mb-4">
+                    <BookOpen className="text-green-400" size={24} />
+                    <h2 className="text-2xl font-bold text-white">
+                      Your Interview Questions ({questions.length})
+                    </h2>
+                  </div>
+
+                  <div className="space-y-3">
+                    {questions.map((question, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ delay: index * 0.05, duration: 0.3 }}
+                      >
+                        <Card hover variant="default">
+                          <div className="p-5 flex items-center justify-between gap-4">
+                            <div className="flex items-start gap-4 flex-1">
+                              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
+                                {index + 1}
+                              </span>
+                              <p className="text-gray-200 flex-1 leading-relaxed">
+                                {question}
+                              </p>
+                            </div>
+                            <motion.button
+                              onClick={() => navigateToAnswer(index + 1)}
+                              whileHover={{ scale: 1.1, x: 5 }}
+                              whileTap={{ scale: 0.9 }}
+                              className="flex-shrink-0 text-blue-400 hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-400/10"
+                              aria-label="View Answer"
+                            >
+                              <ArrowRight size={24} />
+                            </motion.button>
+                          </div>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Empty State */}
+            {!loading && questions.length === 0 && (
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-8 space-y-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-12"
               >
-                {questions.map((question, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="bg-gray-700/50 p-4 rounded-lg flex justify-between items-center border border-gray-600"
-                  >
-                    <span className="flex-grow pr-4">{`${
-                      index + 1
-                    }. ${question}`}</span>
-                    <motion.button
-                      onClick={() => navigateToAnswer(index + 1)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="text-blue-400 hover:text-blue-600"
-                    >
-                      <ArrowRight />
-                    </motion.button>
-                  </motion.div>
-                ))}
+                <Sparkles className="text-gray-600 mx-auto mb-4" size={48} />
+                <p className="text-gray-400 text-lg">
+                  Generate questions to start your interview preparation
+                </p>
               </motion.div>
             )}
-          </AnimatePresence>
+          </Card>
         </motion.div>
       </div>
     </div>
   );
-}
+};
 
-export default function InterviewPage() {
-  return (
-    <Suspense fallback={<div>Loading Interview Prep...</div>}>
-      <InterviewPreparationDashboard />
-    </Suspense>
-  );
-}
+export default InterviewPreparationDashboard;

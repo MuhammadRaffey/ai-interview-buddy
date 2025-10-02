@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import Navbar from "@/components/layout/Navbar";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
   weight: "100 900",
 });
+
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
@@ -14,8 +16,18 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Interview Buddy",
-  description: "Get answers to your interview questions from an AI assistant.",
+  title: "Interview Maestro - AI-Powered Interview Preparation",
+  description:
+    "Master your interviews with AI-generated personalized questions and expert answers. Prepare for technical, behavioral, and case study interviews.",
+  keywords:
+    "interview preparation, AI interview, technical interview, behavioral interview, interview questions",
+  authors: [{ name: "Interview Maestro Team" }],
+  openGraph: {
+    title: "Interview Maestro - AI-Powered Interview Preparation",
+    description:
+      "Master your interviews with AI-generated personalized questions and expert answers.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -26,9 +38,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-gray-900 via-black to-gray-900`}
       >
-        {children}
+        <Navbar />
+        <main className="min-h-screen">{children}</main>
       </body>
     </html>
   );
